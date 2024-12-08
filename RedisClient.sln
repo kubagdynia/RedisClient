@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRedisClient", "Simple
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRedisClient.Tests", "SimpleRedisClient.Tests\SimpleRedisClient.Tests.csproj", "{4852B961-6A38-4507-875F-44A5CAE5F491}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRedisClient.ConsoleExample", "SimpleRedisClient.ConsoleExample\SimpleRedisClient.ConsoleExample.csproj", "{8C5D0A3C-C592-495D-93A6-FDE7F33ED1E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{4852B961-6A38-4507-875F-44A5CAE5F491}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4852B961-6A38-4507-875F-44A5CAE5F491}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4852B961-6A38-4507-875F-44A5CAE5F491}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C5D0A3C-C592-495D-93A6-FDE7F33ED1E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C5D0A3C-C592-495D-93A6-FDE7F33ED1E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C5D0A3C-C592-495D-93A6-FDE7F33ED1E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C5D0A3C-C592-495D-93A6-FDE7F33ED1E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

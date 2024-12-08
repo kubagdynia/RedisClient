@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Moq;
 using StackExchange.Redis;
 
@@ -18,9 +19,23 @@ public class RedisClientTests
         _connectionMock = new Mock<IConnectionMultiplexer>();
         _connectionMock.Setup(c => c.GetDatabase(It.IsAny<int>(), null))
             .Returns(_databaseMock.Object);
+        _connectionMock.Setup(c => c.IsConnected)
+            .Returns(true);
+        
+        var loggerMock = new Mock<ILogger<RedisClient>>();
         
         // Inject the mocks into the RedisClient
-        _redisClient = new RedisClient(_connectionMock.Object);
+        _redisClient = new RedisClient(_connectionMock.Object, loggerMock.Object);
+    }
+    
+    [Test]
+    public void IsConnected_ShouldReturnTrue()
+    {
+        // Act
+        bool isConnected = _redisClient.IsConnected;
+        
+        // Assert
+        Assert.That(isConnected, Is.True);
     }
 
     [Test]

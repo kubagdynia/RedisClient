@@ -16,7 +16,18 @@ public static class ServiceCollectionExtensions
     
     public static IServiceCollection AddSimpleRedisClient(this IServiceCollection services, string connectionString)
     {
+        // var configuration = new ConfigurationOptions
+        // {
+        //     AbortOnConnectFail = false, // Do not abort if the connection fails
+        //     EndPoints = { connectionString },
+        //     ConnectTimeout = 5000, // 5 seconds
+        //     SyncTimeout = 5000, // 5 seconds
+        //     ConnectRetry = 3, // Retry 3 times
+        //     ReconnectRetryPolicy = new ExponentialRetry(2000), // Retry every 2 seconds
+        // };
+        
         ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(connectionString);
+        //ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(configuration);
         services.AddSingleton<IConnectionMultiplexer>(redis);
         services.AddSingleton<IRedisClient, RedisClient>();
         return services;
