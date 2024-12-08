@@ -9,6 +9,7 @@ public class RedisClientTests
 {
     private Mock<IDatabase> _databaseMock;
     private Mock<IConnectionMultiplexer> _connectionMock;
+    private Mock<ISubscriber> _subscriberMock;
     private IRedisClient _redisClient;
     
     [SetUp]
@@ -17,10 +18,14 @@ public class RedisClientTests
         // Mock the database and connection
         _databaseMock = new Mock<IDatabase>();
         _connectionMock = new Mock<IConnectionMultiplexer>();
+        _subscriberMock = new Mock<ISubscriber>();
+        
         _connectionMock.Setup(c => c.GetDatabase(It.IsAny<int>(), null))
             .Returns(_databaseMock.Object);
         _connectionMock.Setup(c => c.IsConnected)
             .Returns(true);
+        _connectionMock.Setup(c => c.GetSubscriber(It.IsAny<object>()))
+            .Returns(_subscriberMock.Object);
         
         var loggerMock = new Mock<ILogger<RedisClient>>();
         
@@ -91,5 +96,45 @@ public class RedisClientTests
 
         // Assert
         _databaseMock.Verify(db => db.KeyExistsAsync(key, CommandFlags.None), Times.Once);
+    }
+    
+    [Test]
+    public async Task PublishAsync_ShouldCallPublishAsyncOnSubscriber()
+    {
+        // Arrange
+        var channel = "testChannel";
+        var message = "testMessage";
+
+        // Act
+        long result = await _redisClient.PublishAsync(channel, message);
+
+        // Assert
+        var redisChannel = new RedisChannel(channel, RedisChannel.PatternMode.Literal);
+        _subscriberMock.Verify(s => s.PublishAsync(redisChannel, message, CommandFlags.None), Times.Once);
+    }
+    
+    [Test]
+    public void Subscribe_ShouldRegisterCallbackAndReceiveMessage()
+    {
+        // Arrange
+        var channel = "testChannel";
+        var messageReceived = string.Empty;
+
+        _subscriberMock
+            .Setup(s => s.Subscribe(It.IsAny<RedisChannel>(), It.IsAny<Action<RedisChannel, RedisValue>>(), CommandFlags.None))
+            .Callback<RedisChannel, Action<RedisChannel, RedisValue>, CommandFlags>((ch, action, flags) =>
+            {
+                // Message sending simulation
+                if (ch == channel)
+                {
+                    action(ch, "testMessage");
+                }
+            });
+
+        // Act
+        _redisClient.Subscribe(channel, message => messageReceived = message);
+
+        // Assert
+        Assert.That(messageReceived, Is.EqualTo("testMessage"));
     }
 }

@@ -53,4 +53,14 @@ public interface IRedisClient
     /// <param name="expiry">The expiration time</param>
     /// <returns>True if the timeout was set, otherwise false</returns>
     Task<bool> ExpireAsync(string key, TimeSpan expiry);
+
+    /// <summary>
+    /// Publish a message to a channel
+    /// </summary>
+    /// <param name="channel">The channel to publish the message to</param>
+    /// <param name="message">The message to publish</param>
+    /// <returns>The number of clients that received the message</returns>
+    Task<long> PublishAsync(string channel, string message);
+
+    void Subscribe(string channel, Action<string> messageHandler);
 }

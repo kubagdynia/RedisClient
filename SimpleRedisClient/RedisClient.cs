@@ -114,7 +114,43 @@ public class RedisClient : IRedisClient
         ArgumentException.ThrowIfNullOrWhiteSpace(key, nameof(key));
         return await _database.KeyExpireAsync(key, expiry);
     }
-    
+
+    /// <summary>
+    /// Publish a message to a channel
+    /// </summary>
+    /// <param name="channel">The channel to publish the message to</param>
+    /// <param name="message">The message to publish</param>
+    /// <returns>The number of clients that received the message</returns>
+    public async Task<long> PublishAsync(string channel, string message)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
+        ArgumentNullException.ThrowIfNull(message, nameof(message));
+        
+        var redisChannel = new RedisChannel(channel, RedisChannel.PatternMode.Literal);
+        var subscriber = _connection.GetSubscriber();
+        return await subscriber.PublishAsync(redisChannel, message);
+        
+        //await _database.PublishAsync(channel, message);
+    }
+
+    /// <summary>
+    /// Subscribe to a channel
+    /// </summary>
+    /// <param name="channel">The channel to subscribe to</param>
+    /// <param name="messageHandler">The handler for messages received on the channel</param>
+    public void Subscribe(string channel, Action<string> messageHandler)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(channel, nameof(channel));
+        ArgumentNullException.ThrowIfNull(messageHandler, nameof(messageHandler));
+        
+        var rChannel = new RedisChannel(channel, RedisChannel.PatternMode.Literal);
+        var subscriber = _connection.GetSubscriber();
+        subscriber.Subscribe(rChannel, (redisChannel, message) =>
+        {
+            messageHandler(message!);
+        });
+    }
+
     private void AddConnectionEventHandlers()
     {
         _connection.ConnectionFailed += (sender, args)
