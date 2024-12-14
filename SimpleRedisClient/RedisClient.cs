@@ -34,6 +34,8 @@ public class RedisClient : IRedisClient
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key, nameof(key));
+        ArgumentNullException.ThrowIfNull(value, nameof(value));
+        
         
         var serializedValue = JsonSerializer.Serialize(value);
         await _database.StringSetAsync(key, serializedValue, expiry);
@@ -79,6 +81,20 @@ public class RedisClient : IRedisClient
         {
             return (false, default); // In case of any exception
         }
+    }
+    
+    /// <summary>
+    /// Get the remaining time to live for a key
+    /// </summary>
+    /// <param name="key">The key to get the remaining time to live for</param>
+    /// <returns>The remaining time to live for the key, or null if the key does not exist or does not have a timeout</returns>
+    /// <exception cref="ArgumentException">Thrown if the key is null or whitespace</exception>
+    public async Task<TimeSpan?> GetRemainingTtlAsync(string key)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key, nameof(key));
+
+        var ttl = await _database.KeyTimeToLiveAsync(key);
+        return ttl;
     }
 
     /// <summary>

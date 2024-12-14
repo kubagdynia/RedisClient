@@ -33,6 +33,14 @@ public interface IRedisClient
     Task<(bool Success, T? Value)> TryGetAsync<T>(string key);
     
     /// <summary>
+    /// Get the remaining time to live for a key
+    /// </summary>
+    /// <param name="key">The key to get the remaining time to live for</param>
+    /// <returns>The remaining time to live for the key, or null if the key does not exist or does not have a timeout</returns>
+    /// <exception cref="ArgumentException">Thrown if the key is null or whitespace</exception>
+    Task<TimeSpan?> GetRemainingTtlAsync(string key);
+    
+    /// <summary>
     /// Delete a key from the Redis database
     /// </summary>
     /// <param name="key">The key to delete</param>

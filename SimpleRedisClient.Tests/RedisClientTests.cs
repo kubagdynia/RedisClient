@@ -137,4 +137,27 @@ public class RedisClientTests
         // Assert
         Assert.That(messageReceived, Is.EqualTo("testMessage"));
     }
+    
+    [Test]
+    public async Task SetKeyWithExpiryAsync_ShouldSetKeyWithTTL()
+    {
+        // Arrange
+        var key = "testKey";
+        var value = "testValue";
+        var serializedValue = JsonSerializer.Serialize(value);
+        var expiry = TimeSpan.FromMinutes(5);
+
+        // Act
+        await _redisClient.SetAsync(key, value, expiry);
+
+        // Assert
+        _databaseMock.Verify(
+            db => db.StringSetAsync(
+                It.Is<RedisKey>(k => k == key),
+                It.Is<RedisValue>(v => v == serializedValue),
+                expiry, 
+                It.IsAny<bool>(),
+                It.Is<When>(w => w == When.Always), 
+                It.Is<CommandFlags>(f => f == CommandFlags.None)), Times.Once);
+    }
 }
