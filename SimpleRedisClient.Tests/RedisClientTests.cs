@@ -20,6 +20,7 @@ public class RedisClientTests
         _connectionMock = new Mock<IConnectionMultiplexer>();
         _subscriberMock = new Mock<ISubscriber>();
         
+        // Mock connection behavior
         _connectionMock.Setup(c => c.GetDatabase(It.IsAny<int>(), null))
             .Returns(_databaseMock.Object);
         _connectionMock.Setup(c => c.IsConnected)
@@ -155,9 +156,28 @@ public class RedisClientTests
             db => db.StringSetAsync(
                 It.Is<RedisKey>(k => k == key),
                 It.Is<RedisValue>(v => v == serializedValue),
-                expiry, 
+                expiry,
                 It.IsAny<bool>(),
-                It.Is<When>(w => w == When.Always), 
+                It.Is<When>(w => w == When.Always),
                 It.Is<CommandFlags>(f => f == CommandFlags.None)), Times.Once);
+    }
+    
+    [Test]
+    public async Task GetRemainingTTLAsync_ShouldReturnCorrectTTL()
+    {
+        // Arrange
+        var key = "testKey";
+        var expectedTtl = TimeSpan.FromMinutes(10);
+
+        _databaseMock.Setup(db => db.KeyTimeToLiveAsync(key, CommandFlags.None))
+            .ReturnsAsync(expectedTtl);
+
+        // Act
+        var ttl = await _redisClient.GetRemainingTtlAsync(key);
+
+        // Assert
+        Assert.That(ttl, Is.EqualTo(expectedTtl));
+        
+        _databaseMock.Verify(db => db.KeyTimeToLiveAsync(key, CommandFlags.None), Times.Once);
     }
 }

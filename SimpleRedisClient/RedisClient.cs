@@ -36,9 +36,67 @@ public class RedisClient : IRedisClient
         ArgumentException.ThrowIfNullOrWhiteSpace(key, nameof(key));
         ArgumentNullException.ThrowIfNull(value, nameof(value));
         
-        
         var serializedValue = JsonSerializer.Serialize(value);
         await _database.StringSetAsync(key, serializedValue, expiry);
+    }
+    
+    /// <summary>
+    /// Set multiple values in the Redis database
+    /// </summary>
+    /// <param name="items">The key-value pairs to set</param>
+    /// <param name="expiry">The expiration time</param>
+    /// <typeparam name="T">The type of the values</typeparam>
+    /// <exception cref="ArgumentException">Thrown if the key-value pairs are null or empty</exception>
+    public async Task SetAsync<T>(IDictionary<string, T> items, TimeSpan? expiry = null)
+    {
+        if (items == null || items.Count == 0)
+        {
+            throw new ArgumentException("Key-value pairs cannot be null or empty.", nameof(items));
+        }
+        
+        var batch = _database.CreateBatch();
+        var tasks = new List<Task>();
+        
+        foreach (var item in items)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(item.Key, nameof(item.Key));
+            ArgumentNullException.ThrowIfNull(item.Value, nameof(item.Value));
+
+            var serializedValue = JsonSerializer.Serialize(item.Value);
+            tasks.Add(batch.StringSetAsync(item.Key, serializedValue, expiry));
+        }
+        
+        batch.Execute();
+        await Task.WhenAll(tasks);
+    }
+    
+    /// <summary>
+    /// Set multiple values in the Redis database
+    /// </summary>
+    /// <param name="items">The key-value pairs to set</param>
+    /// <typeparam name="T">The type of the values</typeparam>
+    /// <exception cref="ArgumentException">Thrown if the key-value pairs are null or empty</exception>
+    public async Task SetAsync<T>(IDictionary<string, (T Value, TimeSpan? Expiry)> items)
+    {
+        if (items == null || items.Count == 0)
+        {
+            throw new ArgumentException("Key-value pairs cannot be null or empty.", nameof(items));
+        }
+
+        var batch = _database.CreateBatch();
+        var tasks = new List<Task>();
+
+        foreach (var (key, entry) in items)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key, nameof(key));
+            ArgumentNullException.ThrowIfNull(entry.Value, nameof(entry.Value));
+
+            var serializedValue = JsonSerializer.Serialize(entry.Value);
+            tasks.Add(batch.StringSetAsync(key, serializedValue, entry.Expiry));
+        }
+
+        batch.Execute();
+        await Task.WhenAll(tasks);
     }
 
     /// <summary>

@@ -15,6 +15,23 @@ public interface IRedisClient
     /// <param name="expiry">The expiration time</param>
     /// <typeparam name="T">The type of the value</typeparam>
     Task SetAsync<T>(string key, T value, TimeSpan? expiry = null);
+
+    /// <summary>
+    /// Set multiple values in the Redis database
+    /// </summary>
+    /// <param name="items">The key-value pairs to set</param>
+    /// <param name="expiry">The expiration time</param>
+    /// <typeparam name="T">The type of the values</typeparam>
+    /// <exception cref="ArgumentException">Thrown if the key-value pairs are null or empty</exception>
+    Task SetAsync<T>(IDictionary<string, T> items, TimeSpan? expiry = null);
+    
+    /// <summary>
+    /// Set multiple values in the Redis database
+    /// </summary>
+    /// <param name="items">The key-value pairs to set</param>
+    /// <typeparam name="T">The type of the values</typeparam>
+    /// <exception cref="ArgumentException">Thrown if the key-value pairs are null or empty</exception>
+    Task SetAsync<T>(IDictionary<string, (T Value, TimeSpan? Expiry)> items);
     
     /// <summary>
     /// Get a value from the Redis database
